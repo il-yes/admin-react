@@ -1,3 +1,3 @@
 export const requests = {
-    corporateList: '/corporates'
+    corporateList: '/api/corporates'
 }

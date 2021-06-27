@@ -10,8 +10,7 @@ export default function CorporateContainer({corporates, pagination, fetchCorpora
             {corporates.length > 0 && pagination 
                         ? <EnhancedTable  
                                 corporates={corporates} 
-                                pagination={pagination}
-                                fetchCorporates={fetchCorporates}/> 
+                                pagination={pagination}/> 
                         :  "il n'y a pas de données..."}
 
         </div>

@@ -27,8 +27,11 @@ import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
 import FormControl from '@material-ui/core/FormControl';
 import {requests} from '../components/requests-api';
-import ArrowBackIosIcon from '@material-ui/icons/ArrowBackIos';
+import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import ArrowForwardIosIcon from '@material-ui/icons/ArrowForwardIos';
+import SkipNextIcon from '@material-ui/icons/SkipNext';
+import SkipPreviousIcon from '@material-ui/icons/SkipPrevious';
+import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 
 
 let fetchUrl = requests.corporateList
@@ -77,6 +80,23 @@ const headCells = [
   { id: '3', numeric: true, disablePadding: false, label: 'Siren' },
   { id: '4', numeric: true, disablePadding: false, label: 'Results' },
 ];
+
+const HeaderLocationBuilder = (term, value, history) => {
+    let params = history.location.search
+    let prefix = history.location.search === "" ? "?" : "&"
+    let paramsSplited = params.split('&')
+    let hasTerm = false;
+
+    for(var i = 0; i<paramsSplited.length; i++) {
+        var res = paramsSplited[i].match(term, 'ig')
+        if(res) {
+            hasTerm = true;
+            prefix = i === 0 ? "?" : ""
+            paramsSplited[i] = `${prefix}${term}=${value}`
+        }
+    } 
+    return hasTerm ? paramsSplited.join("&") : `${paramsSplited.join("&")}${prefix}${term}=${value}`
+}
 
 function EnhancedTableHead(props) {
   const { classes, onSelectAllClick, order, orderBy, numSelected, rowCount, onRequestSort } = props;
@@ -152,49 +172,50 @@ const useToolbarStyles = makeStyles((theme) => ({
 }));
 
 const EnhancedTableToolbar = (props) => {
-      const classes = useToolbarStyles();
-      const { numSelected, pagination, history} = props;
-      const [ filter, setFilter ] =useState('desc');
-    const sector = pagination.metaData.sector ? `&sector=${pagination.metaData.sector}` : '';
+    const classes = useToolbarStyles();
+    const { numSelected, pagination, history} = props;
+    const [ filter, setFilter ] = useState('desc');
 
-      const filterHandler = () => {
-          setFilter(filter === 'desc' ? 'asc' : 'desc')
-          return history.push(
-            `${fetchUrl}?page=${pagination.page}&order=${filter}
-        `)
-      }
+    const filterHandler = () => {
+        setFilter(filter === 'desc' ? 'asc' : 'desc')
+        // toggle icon filter position
+        document.querySelector('.header__toolbar .MuiIconButton-label ').classList.toggle('filter-decrease', filter === 'asc')
+        const location_filter = HeaderLocationBuilder('order', filter, history)
 
-      return (
+        return history.push(`${history.location.pathname}${location_filter}`)
+    }
+
+    return (
         <Toolbar
-          className={clsx(classes.root, {
+          className={`clsx(classes.root, {
             [classes.highlight]: numSelected > 0,
-          })}
-    >
-      {numSelected > 0 ? (
-        <Typography className={classes.title} color="inherit" variant="subtitle1" component="div">
-          {numSelected} selected
-        </Typography>
-      ) : (
-        <Typography className={classes.title} variant="h6" id="tableTitle" component="div">
-          Corporates
-        </Typography>
-      )}
+          })  header__toolbar `}
+        >
+          {numSelected > 0 ? (
+            <Typography className={classes.title} color="inherit" variant="subtitle1" component="div">
+              {numSelected} selected
+            </Typography>
+          ) : (
+            <Typography className={classes.title} variant="h6" id="tableTitle" component="div">
+              Corporates
+            </Typography>
+          )}
 
-      {numSelected > 0 ? (
-        <Tooltip title="Delete">
-          <IconButton aria-label="delete">
-            <DeleteIcon />
-          </IconButton>
-        </Tooltip>
-      ) : (
-        <Tooltip title="Filter list">
-          <IconButton aria-label="filter list" onClick={filterHandler}>
-            <FilterListIcon />
-          </IconButton>
-        </Tooltip>
-      )}
-    </Toolbar>
-  );
+          {numSelected > 0 ? (
+            <Tooltip title="Delete">
+              <IconButton aria-label="delete">
+                <DeleteIcon />
+              </IconButton>
+            </Tooltip>
+          ) : (
+            <Tooltip title="Filter list">
+              <IconButton aria-label="filter list" onClick={filterHandler} >
+                <FilterListIcon />
+              </IconButton>
+            </Tooltip>
+          )}
+        </Toolbar>
+      );
 };
 
 EnhancedTableToolbar.propTypes = {
@@ -225,7 +246,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function EnhancedTable({ corporates, pagination, fetchCorporates }) {
+export default function EnhancedTable({ corporates, pagination }) {
   const classes = useStyles();
   const [order, setOrder] = React.useState('asc');
   const [orderBy, setOrderBy] = React.useState('calories');
@@ -235,7 +256,6 @@ export default function EnhancedTable({ corporates, pagination, fetchCorporates 
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
   const rows = Rows(corporates);
   const history = useHistory();
-
 
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === 'asc';
@@ -253,23 +273,23 @@ export default function EnhancedTable({ corporates, pagination, fetchCorporates 
   };
 
   const handleClick = (event, name) => {
-    const selectedIndex = selected.indexOf(name);
-    let newSelected = [];
+        const selectedIndex = selected.indexOf(name);
+        let newSelected = [];
 
-    if (selectedIndex === -1) {
-      newSelected = newSelected.concat(selected, name);
-    } else if (selectedIndex === 0) {
-      newSelected = newSelected.concat(selected.slice(1));
-    } else if (selectedIndex === selected.length - 1) {
-      newSelected = newSelected.concat(selected.slice(0, -1));
-    } else if (selectedIndex > 0) {
-      newSelected = newSelected.concat(
-        selected.slice(0, selectedIndex),
-        selected.slice(selectedIndex + 1),
-      );
-    }
+        if (selectedIndex === -1) {
+          newSelected = newSelected.concat(selected, name);
+        } else if (selectedIndex === 0) {
+          newSelected = newSelected.concat(selected.slice(1));
+        } else if (selectedIndex === selected.length - 1) {
+          newSelected = newSelected.concat(selected.slice(0, -1));
+        } else if (selectedIndex > 0) {
+          newSelected = newSelected.concat(
+            selected.slice(0, selectedIndex),
+            selected.slice(selectedIndex + 1),
+          );
+        }
 
-    setSelected(newSelected);
+        setSelected(newSelected);
   };
 
   const handleChangePage = (event, newPage) => {
@@ -356,14 +376,21 @@ export default function EnhancedTable({ corporates, pagination, fetchCorporates 
           </Table>
         </TableContainer>
         
-		<Pagination
+        <Pagination
+            pagination={pagination}
+            history={history}
+        />
+
+      
+
+		{/* <Pagination
 			total={pagination.total}
 			limit= {pagination.limit}
 			page= {pagination.page}
 			pages= {pagination.pages}
             metaData={pagination.metaData}
             history={history}
-		/>
+		/> */}
       </Paper>
       <FormControlLabel
         control={<Switch checked={dense} onChange={handleChangeDense} />}
@@ -374,48 +401,75 @@ export default function EnhancedTable({ corporates, pagination, fetchCorporates 
 }
 
 
-function Pagination({ total, limit, page, pages, metaData, history }) {
-	const [rowsPerPage, setRowsPerPage] = React.useState(limit);
-    const sector = metaData.sector ? `&sector=${metaData.sector}` : ''
-    const previous  = page > 1 
-                        ? `?page= ${page - 1}` 
-                        : ''
-    const next      = `?page=${page + 1}` 
 
-  const handleChange = (event) => {
-    setRowsPerPage(event.target.value);
-    return history.push(`${fetchUrl}?limit=${event.target.value}`)
-  };
+const Pagination = ({pagination, history}) => {
+    const limit = Number(pagination.limit)
+    const page  = Number(pagination.page)
+    const total = Number(pagination.total)
+    const pages = Number(pagination.pages)
+    const [rowsPerPage, setRowsPerPage] = React.useState(limit);
 
+    const previous  = page > 1 ? `${pagination._links.prev}` : ''
+    const next      = `${pagination._links.next}` 
 
-	return (
-		<>
-			<div className="pagination__container">
-				<span className="page-item" >Rows Per Page</span>				
-				<FormControl className="page-item">
-						<Select
-						id="demo-simple-select"
-						value={rowsPerPage}
-						onChange={handleChange}
-						>
-						<MenuItem value={5}>5</MenuItem>
-						<MenuItem value={10}>10</MenuItem>
-						<MenuItem value={20}>20</MenuItem>
-						</Select>
-					</FormControl>
-				<span className="page-item">{(page * limit - limit) + 1}-{limit * page} of {total}</span>
-				<span class={`page-item ${ page == 1 ? 'disabled' : '' }`}>
-					<Link 
-					class="page-link" 
-					to={`${previous}`}><ArrowBackIosIcon /></Link>
-				</span>
-				<span class={`page-item ${ page == pages ? 'disabled' : '' }`}>
-					<Link
-					class="page-link" 
-					to={`${next}`}><ArrowForwardIosIcon /></Link>
-				</span>
-			</div>
-    </>
-	)
+    const handleChange = (event) => {
+        setRowsPerPage(event.target.value);
+        const location_search = HeaderLocationBuilder('limit', event.target.value, history)
+        
+        return history.push(`${history.location.pathname}${location_search}`)
+    };
+
+    return (
+        <>
+            <div className="pagination__container">
+                <span className="page-item" >Rows per page:</span>       
+                <FormControl className="page-item">
+                    <Select
+                        id="demo-simple-select"
+                        value={rowsPerPage}
+                        onChange={handleChange}
+                    >
+                        <MenuItem value={5}>5</MenuItem>
+                        <MenuItem value={10}>10</MenuItem>
+                        <MenuItem value={20}>20</MenuItem>
+                    </Select>
+                </FormControl>
+                <span className="page-item">{(page * limit - limit) + 1}-{limit * page} of {total}</span>
+                
+                <PageLink 
+                    to={`${pagination._links.first}`} 
+                    page={page}
+                    border={1}
+                    icon={<SkipPreviousIcon />}
+                />
+                <PageLink 
+                    to={`${pagination._links.prev}`} 
+                    page={page}
+                    border={1}
+                    icon={<ChevronLeftIcon />}
+                />
+                <PageLink 
+                    to={`${pagination._links.next}`} 
+                    page={page}
+                    border={pages}
+                    icon={<ChevronRightIcon />}
+                />
+                <PageLink 
+                    to={`${pagination._links.last}`} 
+                    page={page}
+                    border={pages}
+                    icon={<SkipNextIcon />}
+                />
+            </div>
+        </>
+    )
 }
+
+const PageLink = ({to, page, border, icon}) => (
+    <span class="page-item">
+        <Link 
+            class={`page-link ${ page == border ? 'disabled' : '' }`} 
+            to={to}>{icon}</Link>
+    </span>
+)
 

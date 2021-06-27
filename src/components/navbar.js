@@ -34,7 +34,7 @@ export default function ButtonAppBar() {
             Dashboard
           </Typography>
           <Button component={Link} to="/" color="inherit">Home</Button>
-          <Button component={Link} to="/corporates" color="inherit">corporates</Button>
+          <Button component={Link} to="/api/corporates" color="inherit">corporates</Button>
         </Toolbar>
       </AppBar>
     </div>

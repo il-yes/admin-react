@@ -43,9 +43,10 @@ export default function Corporates() {
 				<SearchFields />
 				{loading ? <LinearProgress /> : ''}
 				<CorporateContainer 
-				corporates={corporates} 
-				pagination={pagination}
-				fetchCorporates={fetchCorporates}/>
+					corporates={corporates} 
+					pagination={pagination}
+					fetchCorporates={fetchCorporates}
+				/>
 			</Container>
 		</div>
     )

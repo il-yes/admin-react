@@ -50,3 +50,13 @@
 .text-center{
   text-align: center;
 }
+
+
+.disabled {
+      pointer-events: none;
+    cursor: default;
+    opacity: 0.6;
+}
+.filter-decrease{
+  transform: rotate(180deg);
+}
